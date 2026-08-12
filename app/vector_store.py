@@ -96,7 +96,7 @@ if __name__ == "__main__":
     build_vector_store()
 
     print("\n=== Test retrieval: 'Python loops for beginners' ===")
-    results = retrieve("Python loops for beginners", k=3)
+    results = retrieve("Python loops for beginners", k=8)
     for text, meta, distance in results:
         print(f"\nSource: {meta['source']} (distance: {distance:.4f})")
         print(f"Chunk: {text[:150]}...")

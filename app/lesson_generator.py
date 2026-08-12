@@ -12,7 +12,7 @@ client = OpenAI(
 )
 
 
-def build_context(topic, k=5):
+def build_context(topic, k=8):
     results = retrieve(topic, k=k)
     context_parts = []
     sources = set()
@@ -23,7 +23,7 @@ def build_context(topic, k=5):
 
 
 def generate_lesson_pack(topic, level="beginner", duration_minutes=60):
-    context, sources = build_context(topic, k=6)
+    context, sources = build_context(topic, k=10)
 
     prompt = f"""You are an assistant that creates lesson packs for teachers, based ONLY on the course material provided below.
 

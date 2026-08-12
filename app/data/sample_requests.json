@@ -1,0 +1,51 @@
+[
+  {
+    "session_id": "lesson-001",
+    "topic": "Python Loops",
+    "level": "beginner",
+    "duration_minutes": 60,
+    "request": "Generate the lesson pack"
+  },
+  {
+    "session_id": "lesson-002",
+    "topic": "SQL JOIN and GROUP BY",
+    "level": "intermediate",
+    "duration_minutes": 75,
+    "request": "Create a lesson with a worked example and practice"
+  },
+  {
+    "session_id": "lesson-003",
+    "topic": "Linear Equations",
+    "level": "beginner",
+    "duration_minutes": 60,
+    "request": "Generate a lesson with guided practice"
+  },
+  {
+    "session_id": "lesson-004",
+    "topic": "Motion, Speed, Velocity, and Acceleration",
+    "level": "beginner",
+    "duration_minutes": 75,
+    "request": "Create the lesson pack"
+  },
+  {
+    "session_id": "lesson-005",
+    "topic": "Cell Structure and Function",
+    "level": "beginner",
+    "duration_minutes": 60,
+    "request": "Generate a lesson and quiz"
+  },
+  {
+    "session_id": "lesson-006",
+    "topic": "Acids, Bases, and pH",
+    "level": "intermediate",
+    "duration_minutes": 60,
+    "request": "Generate a lesson with safe classroom examples"
+  },
+  {
+    "session_id": "lesson-007",
+    "topic": "Professional Email Writing",
+    "level": "beginner",
+    "duration_minutes": 45,
+    "request": "Create a short lesson with before-and-after examples"
+  }
+]

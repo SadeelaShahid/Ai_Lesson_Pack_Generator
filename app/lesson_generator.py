@@ -57,21 +57,32 @@ If the course material does not cover this topic, respond with:
 {{"error": "Topic not covered in provided materials"}}
 """
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    lesson_json = None
 
-    raw_output = response.choices[0].message.content
+    for attempt in range(3):
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=[{"role": "user", "content": prompt}]
+        )
 
-    try:
-        lesson_json = json.loads(raw_output)
-    except json.JSONDecodeError:
-        cleaned = raw_output.strip().strip("```").replace("json", "", 1).strip()
+        raw_output = response.choices[0].message.content
+
+        if raw_output is None or raw_output.strip() == "":
+            continue
+
         try:
-            lesson_json = json.loads(cleaned)
+            lesson_json = json.loads(raw_output)
+            break
         except json.JSONDecodeError:
-            return {"error": "Model did not return valid JSON", "raw_output": raw_output}
+            cleaned = raw_output.strip().strip("```").replace("json", "", 1).strip()
+            try:
+                lesson_json = json.loads(cleaned)
+                break
+            except json.JSONDecodeError:
+                continue
+
+    if lesson_json is None:
+        return {"error": "Model did not return valid JSON after multiple attempts"}
 
     lesson_json["sources"] = sources
     return lesson_json

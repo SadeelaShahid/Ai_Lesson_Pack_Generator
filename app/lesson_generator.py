@@ -22,15 +22,23 @@ def build_context(topic, k=8):
     return "\n\n---\n\n".join(context_parts), list(sources)
 
 
-def generate_lesson_pack(topic, level="beginner", duration_minutes=60):
+def generate_lesson_pack(topic, level="beginner", duration_minutes=60, instruction=None):
+    """
+    topic: the core subject to retrieve course material for (e.g. "Python Loops")
+    instruction: optional extra guidance for how to modify/create the lesson
+                 (e.g. "make the second example easier"), used only for generation,
+                 not for retrieval.
+    """
     context, sources = build_context(topic, k=10)
+
+    extra_instruction = f"\n\nAdditional instruction from the teacher: {instruction}" if instruction else ""
 
     prompt = f"""You are an assistant that creates lesson packs for teachers, based ONLY on the course material provided below.
 
 Course Material:
 {context}
 
-Task: Create a complete lesson pack for the topic "{topic}", level "{level}", duration {duration_minutes} minutes.
+Task: Create a complete lesson pack for the topic "{topic}", level "{level}", duration {duration_minutes} minutes.{extra_instruction}
 
 Respond with ONLY a valid JSON object in this exact structure, no extra text before or after:
 {{

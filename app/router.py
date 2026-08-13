@@ -16,6 +16,8 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY")
 )
 
+# Keeps the most recently generated lesson's TOPIC (clean, short) per session,
+# plus its full lesson JSON, so follow-ups can retrieve against the right topic.
 LAST_LESSON = {}
 
 
@@ -80,6 +82,29 @@ def extract_version_id(message):
     return match.group() if match else None
 
 
+def extract_topic(message, history):
+    """
+    Decides what topic to retrieve course material for.
+    If this looks like a fresh topic request, extract the topic from the message itself.
+    If it looks like a follow-up modification and we have a previous topic for this
+    session, reuse that previous topic for retrieval.
+    """
+    prompt = f"""The user said: "{message}"
+
+Extract just the core subject/topic they want a lesson about (e.g. "Python Loops", "SQL JOIN and GROUP BY").
+If the message does not mention a new topic and is instead a follow-up modification request
+(like "make it easier", "the second example", "an advanced version instead"), reply with exactly: SAME_TOPIC
+
+Reply with ONLY the topic name or SAME_TOPIC, nothing else."""
+
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    content = response.choices[0].message.content
+    return content.strip() if content else "SAME_TOPIC"
+
+
 def handle_message(session_id, message, level="beginner", duration_minutes=60):
     history = get_history(session_id)
     save_message(session_id, "user", message)
@@ -87,10 +112,24 @@ def handle_message(session_id, message, level="beginner", duration_minutes=60):
     route = decide_route(message)
 
     if "generate" in route:
-        standalone_message = rewrite_query(history, message)
-        result = generate_lesson_pack(standalone_message, level=level, duration_minutes=duration_minutes)
+        extracted = extract_topic(message, history)
+
+        if extracted == "SAME_TOPIC" and session_id in LAST_LESSON:
+            topic = LAST_LESSON[session_id]["topic"]
+        else:
+            topic = extracted
+
+        instruction = rewrite_query(history, message)
+
+        result = generate_lesson_pack(
+            topic,
+            level=level,
+            duration_minutes=duration_minutes,
+            instruction=instruction
+        )
+
         LAST_LESSON[session_id] = {
-            "topic": standalone_message,
+            "topic": topic,
             "level": level,
             "lesson_json": result
         }
@@ -121,24 +160,14 @@ def handle_message(session_id, message, level="beginner", duration_minutes=60):
 
 
 if __name__ == "__main__":
-    sid = "router-test-session"
+    sid = "router-test-session-2"
 
     print("=== Test 1: Generate ===")
     r1 = handle_message(sid, "Generate a lesson on Python Loops")
     print(f"Route: {r1['route']}")
     print(f"Reply preview: {r1['reply'][:150]}...\n")
 
-    print("=== Test 2: Save ===")
-    r2 = handle_message(sid, "Save this lesson")
+    print("=== Test 2: Follow-up (should reuse Python Loops topic) ===")
+    r2 = handle_message(sid, "Make the second example easier")
     print(f"Route: {r2['route']}")
-    print(f"Reply: {r2['reply']}\n")
-
-    print("=== Test 3: List ===")
-    r3 = handle_message(sid, "Show me my saved lessons")
-    print(f"Route: {r3['route']}")
-    print(f"Reply: {r3['reply']}\n")
-
-    print("=== Test 4: Chat ===")
-    r4 = handle_message(sid, "Hello, how are you?")
-    print(f"Route: {r4['route']}")
-    print(f"Reply: {r4['reply']}\n")
+    print(f"Reply preview: {r2['reply'][:200]}...\n")
